@@ -1,16 +1,19 @@
 import express from "express";
-import protect from "../middleware/authMiddleware.js";
-import User from "../models/User.js";
 
 const router = express.Router();
 
-// ✅ Get logged-in user profile
-router.get("/profile", protect, async (req, res) => {
-  if (req.user) {
-    res.json(req.user);
-  } else {
-    res.status(404).json({ message: "User not found" });
-  }
+// Example user routes
+router.get("/", (req, res) => {
+  res.send("User API is working 🚀");
+});
+
+router.post("/register", (req, res) => {
+  res.json({ message: "User registered successfully" });
+});
+
+router.post("/login", (req, res) => {
+  res.json({ message: "User logged in successfully" });
 });
 
 export default router;
+
