@@ -1,3 +1,0 @@
-# Allow all search engines to crawl your site
-User-agent: *
-Allow: /
