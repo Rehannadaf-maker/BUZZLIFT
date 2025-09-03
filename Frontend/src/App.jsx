@@ -1,12 +1,12 @@
 import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/admin/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 
 // Pages
 import Home from "./pages/Home";
-import Products from "./pages/Products";
-import About from "./pages/About";
+import Products from "./pages/admin/Products";
+import About from "./pages/admin/About";
 import Contact from "./pages/contact";
 import NotFound from "./pages/NotFound";
 

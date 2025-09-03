@@ -1,98 +1,86 @@
-import { motion } from "framer-motion";
-import { ShoppingCart, CheckCircle } from "lucide-react";
-import { useState } from "react";
-
-const products = [
-  {
-    id: 1,
-    name: "Buzzlift Hoodie",
-    price: "₹1,999",
-    image: "https://via.placeholder.com/400x500.png?text=Buzzlift+Hoodie",
-  },
-  {
-    id: 2,
-    name: "Buzzlift Sneakers",
-    price: "₹3,499",
-    image: "https://via.placeholder.com/400x500.png?text=Buzzlift+Sneakers",
-  },
-  {
-    id: 3,
-    name: "Buzzlift Jacket",
-    price: "₹4,299",
-    image: "https://via.placeholder.com/400x500.png?text=Buzzlift+Jacket",
-  },
-  {
-    id: 4,
-    name: "Buzzlift Backpack",
-    price: "₹2,199",
-    image: "https://via.placeholder.com/400x500.png?text=Buzzlift+Backpack",
-  },
-];
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import api from "../utils/api";
 
 export default function Products() {
-  const [message, setMessage] = useState("");
+  const [products, setProducts] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
 
-  const handleAddToCart = (productName) => {
-    setMessage(`🎉 Thanks for shopping! ${productName} added to cart.`);
-    setTimeout(() => setMessage(""), 3000); // Hide after 3 sec
-  };
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await api.get("/products");
+        setProducts(res.data);
+      } catch {
+        setProducts([]);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchesFilter = filter === "all" || p.category === filter;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
-    <div className="px-6 py-12 max-w-7xl mx-auto">
-      {/* Success Message */}
-      {message && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          className="fixed top-6 right-6 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2"
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      <h2 className="text-3xl font-bold mb-6">Our Products</h2>
+
+      {/* 🔍 Search + Filter */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <input
+          type="text"
+          placeholder="Search products..."
+          className="w-full md:w-1/3 p-3 border rounded-lg"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <select
+          className="p-3 border rounded-lg"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
         >
-          <CheckCircle size={20} />
-          {message}
-        </motion.div>
-      )}
-
-      {/* Page Title */}
-      <h1 className="text-4xl font-bold text-center mb-10">Shop Buzzlift</h1>
-
-      {/* Filter Bar */}
-      <div className="flex justify-between items-center mb-8">
-        <p className="text-gray-600">{products.length} Products</p>
-        <select className="border rounded-lg px-4 py-2 shadow-sm">
-          <option>Sort by: Featured</option>
-          <option>Price: Low to High</option>
-          <option>Price: High to Low</option>
-          <option>Newest</option>
+          <option value="all">All Categories</option>
+          <option value="hoodies">Hoodies</option>
+          <option value="sneakers">Sneakers</option>
+          <option value="jackets">Jackets</option>
+          <option value="accessories">Accessories</option>
         </select>
       </div>
 
-      {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {products.map((product) => (
-          <motion.div
-            key={product.id}
-            className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition duration-300"
-            whileHover={{ scale: 1.05 }}
-          >
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-64 object-cover"
-            />
-            <div className="p-4 flex flex-col items-center">
-              <h2 className="text-lg font-semibold">{product.name}</h2>
-              <p className="text-gray-600">{product.price}</p>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => handleAddToCart(product.name)}
-                className="mt-3 flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full shadow-md hover:bg-gray-800"
+      {/* 🛒 Product Grid */}
+      {filteredProducts.length === 0 ? (
+        <p className="text-gray-500">No products found.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {filteredProducts.map((product) => (
+            <div
+              key={product._id}
+              className="bg-white rounded-xl shadow-md hover:shadow-xl transition p-4 flex flex-col"
+            >
+              <Link to={`/products/${product._id}`}>
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-56 object-cover rounded-md"
+                />
+                <h3 className="text-lg font-semibold mt-3">{product.name}</h3>
+                <p className="text-gray-600">₹{product.price}</p>
+              </Link>
+              <Link
+                to={`/products/${product._id}`}
+                className="mt-4 bg-red-500 text-white text-center py-2 rounded-lg hover:bg-red-600 transition"
               >
-                <ShoppingCart size={18} /> Add to Cart
-              </motion.button>
+                View Details
+              </Link>
             </div>
-          </motion.div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
